@@ -14,7 +14,7 @@ All resource names are role-based (for example, PM, Auditor 1). No personal name
 
 Sprint 0 (project scaffolding) — in progress.
 
-Full sprint plan, architecture decisions, and design rationale are documented in `docs/AuditTracker_Living_Document_v0.3.docx`.
+Full sprint plan, architecture decisions, and design rationale are documented in `docs/AuditTracker_Living_Document_v0.4.docx`.
 
 ## Environment
 
