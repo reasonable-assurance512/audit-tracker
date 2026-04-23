@@ -17,35 +17,44 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from builder.holidays_tab import build_holidays_tab
+from builder.setup_tab import build_setup_tab
 
 
 GOLDEN_FILE_PATH = PROJECT_ROOT / "tests" / "golden_files" / "v4_reference.xlsx"
 
 
-def generate_holidays_workbook():
-    """Generate a new workbook with just the Holidays & Skeleton tab."""
+def generate_full_workbook():
+    """
+    Generate a workbook with all tabs extracted so far.
+    Currently: Holidays & Skeleton, Audit Setup.
+    """
     wb = Workbook()
-    build_holidays_tab(wb)
+    holidays_info = build_holidays_tab(wb)
+    build_setup_tab(
+        wb,
+        closed_range=holidays_info["closed_range"],
+        skeleton_range=holidays_info["skeleton_range"],
+    )
     return wb
 
 
 def normalize_value(value):
     """
     Normalize values so that equivalent representations compare equal.
-    Handles the date/datetime difference that arises from saving and
-    reloading xlsx files: openpyxl stores date as datetime-at-midnight
-    when a workbook is saved and reopened.
+    Handles three xlsx save/load artifacts:
+    1. date stored as datetime at midnight
+    2. empty string stored as None
+    3. None is already None
     """
     if isinstance(value, datetime) and value.time().hour == 0 and value.time().minute == 0:
         return value.date()
+    if value == "":
+        return None
     return value
 
 
 def normalize_wrap_text(value):
-    """
-    Treat wrap_text=False and wrap_text=None as equivalent.
-    Both mean 'text does not wrap' in Excel.
-    """
+    """Treat wrap_text=False and wrap_text=None as equivalent."""
     if value is None:
         return False
     return value
@@ -55,8 +64,6 @@ def get_cell_snapshot(cell):
     """
     Extract comparable properties from a cell.
     Returns a dict of value, font, fill, alignment, and border info.
-    Values are normalized to avoid false positives from openpyxl's
-    inconsistent representation of equivalent states.
     """
     return {
         "value": normalize_value(cell.value),
@@ -77,11 +84,7 @@ def get_cell_snapshot(cell):
 
 
 def compare_tabs(new_ws, golden_ws, tab_name):
-    """
-    Compare two worksheets cell-by-cell for all cells that have values
-    in either sheet. Returns a list of differences; empty list means
-    the tabs match.
-    """
+    """Cell-by-cell comparison. Returns list of differences."""
     differences = []
 
     max_row = max(new_ws.max_row, golden_ws.max_row)
@@ -93,6 +96,10 @@ def compare_tabs(new_ws, golden_ws, tab_name):
             golden_cell = golden_ws.cell(row=row, column=col)
 
             if new_cell.value is None and golden_cell.value is None:
+                continue
+            if new_cell.value == "" and golden_cell.value is None:
+                continue
+            if new_cell.value is None and golden_cell.value == "":
                 continue
 
             new_snap = get_cell_snapshot(new_cell)
@@ -109,18 +116,21 @@ def compare_tabs(new_ws, golden_ws, tab_name):
     return differences
 
 
-def test_holidays_tab_parity():
-    """Verify that the modularized holidays tab matches the golden file."""
-    new_wb = generate_holidays_workbook()
-    new_ws = new_wb["Holidays & Skeleton"]
+def run_parity_check(tab_name):
+    """Generate a workbook, load golden, compare specified tab."""
+    new_wb = generate_full_workbook()
+    new_ws = new_wb[tab_name]
 
     golden_wb = load_workbook(GOLDEN_FILE_PATH)
-    golden_ws = golden_wb["Holidays & Skeleton"]
+    golden_ws = golden_wb[tab_name]
 
-    differences = compare_tabs(new_ws, golden_ws, "Holidays & Skeleton")
+    return compare_tabs(new_ws, golden_ws, tab_name)
 
+
+def report_and_assert(tab_name, differences):
+    """Print differences (first 10) and assert zero if any."""
     if differences:
-        print(f"\n{len(differences)} differences found:")
+        print(f"\n{tab_name}: {len(differences)} differences found")
         for diff in differences[:10]:
             print(f"  Cell {diff['cell']}:")
             print(f"    new:    {diff['new']}")
@@ -128,11 +138,24 @@ def test_holidays_tab_parity():
         if len(differences) > 10:
             print(f"  ... and {len(differences) - 10} more")
         raise AssertionError(
-            f"Holidays & Skeleton tab has {len(differences)} cell differences"
+            f"{tab_name} has {len(differences)} cell differences"
         )
+    print(f"{tab_name}: PARITY VERIFIED (no differences)")
 
-    print("Holidays & Skeleton tab: PARITY VERIFIED (no differences)")
+
+def test_holidays_tab_parity():
+    """Verify that the modularized holidays tab matches the golden file."""
+    differences = run_parity_check("Holidays & Skeleton")
+    report_and_assert("Holidays & Skeleton", differences)
+
+
+def test_setup_tab_parity():
+    """Verify that the modularized setup tab matches the golden file."""
+    differences = run_parity_check("Audit Setup")
+    report_and_assert("Audit Setup", differences)
 
 
 if __name__ == "__main__":
     test_holidays_tab_parity()
+    test_setup_tab_parity()
+
