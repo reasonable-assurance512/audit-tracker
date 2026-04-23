@@ -16,7 +16,9 @@ from openpyxl import Workbook, load_workbook
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from builder.constants import RES_TABS
 from builder.holidays_tab import build_holidays_tab
+from builder.resource_tab import build_all_resource_tabs
 from builder.setup_tab import build_setup_tab
 
 
@@ -26,7 +28,7 @@ GOLDEN_FILE_PATH = PROJECT_ROOT / "tests" / "golden_files" / "v4_reference.xlsx"
 def generate_full_workbook():
     """
     Generate a workbook with all tabs extracted so far.
-    Currently: Holidays & Skeleton, Audit Setup.
+    Currently: Holidays & Skeleton, Audit Setup, 9 Resource tabs.
     """
     wb = Workbook()
     holidays_info = build_holidays_tab(wb)
@@ -35,17 +37,16 @@ def generate_full_workbook():
         closed_range=holidays_info["closed_range"],
         skeleton_range=holidays_info["skeleton_range"],
     )
+    build_all_resource_tabs(
+        wb,
+        closed_range=holidays_info["closed_range"],
+        skeleton_range=holidays_info["skeleton_range"],
+    )
     return wb
 
 
 def normalize_value(value):
-    """
-    Normalize values so that equivalent representations compare equal.
-    Handles three xlsx save/load artifacts:
-    1. date stored as datetime at midnight
-    2. empty string stored as None
-    3. None is already None
-    """
+    """Normalize xlsx save/load artifacts."""
     if isinstance(value, datetime) and value.time().hour == 0 and value.time().minute == 0:
         return value.date()
     if value == "":
@@ -61,10 +62,7 @@ def normalize_wrap_text(value):
 
 
 def get_cell_snapshot(cell):
-    """
-    Extract comparable properties from a cell.
-    Returns a dict of value, font, fill, alignment, and border info.
-    """
+    """Extract comparable properties from a cell."""
     return {
         "value": normalize_value(cell.value),
         "number_format": cell.number_format,
@@ -144,18 +142,50 @@ def report_and_assert(tab_name, differences):
 
 
 def test_holidays_tab_parity():
-    """Verify that the modularized holidays tab matches the golden file."""
+    """Verify the modularized holidays tab matches the golden file."""
     differences = run_parity_check("Holidays & Skeleton")
     report_and_assert("Holidays & Skeleton", differences)
 
 
 def test_setup_tab_parity():
-    """Verify that the modularized setup tab matches the golden file."""
+    """Verify the modularized setup tab matches the golden file."""
     differences = run_parity_check("Audit Setup")
     report_and_assert("Audit Setup", differences)
+
+
+def test_resource_tabs_parity():
+    """Verify all 9 modularized resource tabs match the golden file."""
+    tab_diff_counts = {}
+    for tab_name in RES_TABS:
+        differences = run_parity_check(tab_name)
+        if differences:
+            tab_diff_counts[tab_name] = differences
+
+    if tab_diff_counts:
+        first_tab = list(tab_diff_counts.keys())[0]
+        diffs = tab_diff_counts[first_tab]
+        print(f"\n{first_tab}: {len(diffs)} differences found (first tab with diffs)")
+        for diff in diffs[:10]:
+            print(f"  Cell {diff['cell']}:")
+            print(f"    new:    {diff['new']}")
+            print(f"    golden: {diff['golden']}")
+        if len(diffs) > 10:
+            print(f"  ... and {len(diffs) - 10} more in {first_tab}")
+        other_tabs = [
+            f"{t}: {len(d)}" for t, d in list(tab_diff_counts.items())[1:]
+        ]
+        if other_tabs:
+            print(f"  Other tabs with differences: {', '.join(other_tabs)}")
+        total = sum(len(d) for d in tab_diff_counts.values())
+        raise AssertionError(
+            f"Resource tabs have {total} total cell differences "
+            f"across {len(tab_diff_counts)} tabs"
+        )
+
+    print(f"All 9 Resource tabs: PARITY VERIFIED (no differences)")
 
 
 if __name__ == "__main__":
     test_holidays_tab_parity()
     test_setup_tab_parity()
-
+    test_resource_tabs_parity()
