@@ -1,8 +1,9 @@
 """
-Audit Resource Tracker — Sprint 1 walking skeleton.
+Audit Resource Tracker — Streamlit entry point.
 
-Streamlit entry point. Accepts kickoff date and phase weeks,
-generates an Excel workbook, and offers it as a browser download.
+Accepts kickoff date and phase weeks, generates a complete 11-tab
+Excel workbook via the modular builder package, and offers it as
+a browser download.
 """
 
 from datetime import date
@@ -19,7 +20,7 @@ st.set_page_config(
 )
 
 st.title("Audit Resource Tracker")
-st.caption("Sprint 1 walking skeleton — minimal input, Audit Setup tab only")
+st.caption("Sprint 2 preview — full 11-tab workbook, modular builder")
 
 st.markdown(
     """
@@ -29,19 +30,24 @@ st.markdown(
     """
 )
 
+st.markdown(
+    """
+    > **Scope note.** Output uses reference dates regardless of inputs.
+    > Input-driven generation is the next sprint's work.
+    """
+)
+
 st.divider()
 
 st.subheader("Audit parameters")
 
 col1, col2 = st.columns(2)
-
 with col1:
     kickoff_date = st.date_input(
         "Kickoff date",
         value=date(2026, 5, 4),
         help="The audit's kickoff / project launch date",
     )
-
 with col2:
     st.write("")
 
@@ -94,11 +100,8 @@ if st.button("Generate workbook", type="primary", disabled=not can_generate):
         fieldwork_weeks=int(fieldwork_weeks),
         reporting_weeks=int(reporting_weeks),
     )
-
     filename = f"Audit_Tracker_{kickoff_date.strftime('%Y-%m-%d')}.xlsx"
-
     st.success("Workbook generated. Click below to download.")
-
     st.download_button(
         label=f"Download {filename}",
         data=output,
