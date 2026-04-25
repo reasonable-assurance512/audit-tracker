@@ -185,6 +185,23 @@ def test_resource_tabs_parity():
     print(f"All 9 Resource tabs: PARITY VERIFIED (no differences)")
 
 
+# ─────────────────────────────────────────────────────────────────
+# Deferred parity coverage
+# ─────────────────────────────────────────────────────────────────
+# The Master Budget by Date and Budget by Task tabs are not yet
+# covered by parity tests. Per Option D (Sprint 2 Step 5 design
+# decision), these tabs are extracted into the modular package and
+# verified visually but not by automated cell-by-cell comparison.
+#
+# Reason: the reference/build_v4.py script does not currently produce
+# these tabs in its golden output. Extending parity coverage to MBDD
+# and Budget by Task requires either (a) extending the reference
+# script to produce them, then regenerating the golden file, or
+# (b) generating a separate golden file specifically for these tabs.
+#
+# Tracked as backlog item F-10 for a future sprint.
+# ─────────────────────────────────────────────────────────────────
+
 if __name__ == "__main__":
     test_holidays_tab_parity()
     test_setup_tab_parity()
