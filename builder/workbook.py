@@ -14,6 +14,7 @@ from io import BytesIO
 
 from openpyxl import Workbook
 
+from .bbt_tab import build_bbt_tab
 from .holidays_tab import build_holidays_tab
 from .mbdd_tab import build_mbdd_tab
 from .resource_tab import build_all_resource_tabs
@@ -52,6 +53,12 @@ def build_workbook(kickoff_date, planning_weeks, fieldwork_weeks, reporting_week
     )
 
     build_mbdd_tab(
+        wb,
+        closed_range=closed_range,
+        skeleton_range=skeleton_range,
+    )
+
+    build_bbt_tab(
         wb,
         closed_range=closed_range,
         skeleton_range=skeleton_range,
