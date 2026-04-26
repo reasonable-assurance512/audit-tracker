@@ -5,9 +5,11 @@ Coordinates the modular tab builders to produce a complete workbook
 ready for download. Returns a BytesIO object suitable for
 Streamlit's st.download_button.
 
-Per Sprint 2 scope: inputs are accepted but not yet threaded through
-to the tab builders. The output workbook uses reference dates that
-match the v4 golden file. Input-driven generation is Sprint 3 work.
+Per Sprint 3 (conservative scope): inputs are accepted as an AuditConfig
+dataclass and forwarded to tab builders. The tab builders themselves
+do not yet consume config values; that is Phase 3 of Sprint 3 work.
+For now, the workbook output is identical regardless of config because
+the tab builders use their existing hardcoded defaults.
 """
 
 from io import BytesIO
@@ -15,24 +17,29 @@ from io import BytesIO
 from openpyxl import Workbook
 
 from .bbt_tab import build_bbt_tab
+from .config import AuditConfig
 from .holidays_tab import build_holidays_tab
 from .mbdd_tab import build_mbdd_tab
 from .resource_tab import build_all_resource_tabs
 from .setup_tab import build_setup_tab
 
 
-def build_workbook(kickoff_date, planning_weeks, fieldwork_weeks, reporting_weeks):
+def build_workbook(config: AuditConfig) -> BytesIO:
     """
     Build the complete Audit Resource Tracker workbook.
 
     Args:
-        kickoff_date: date object (currently unused; see module docstring)
-        planning_weeks: int (currently unused)
-        fieldwork_weeks: int (currently unused)
-        reporting_weeks: int (currently unused)
+        config: AuditConfig dataclass with kickoff date, phase weeks,
+            on-target buffer, and hours-per-holiday values.
 
     Returns:
         BytesIO containing the generated .xlsx file, positioned at start.
+
+    Note:
+        Per Sprint 3 conservative scope, config is currently accepted but
+        not yet threaded through to tab builders. The output workbook uses
+        hardcoded defaults that match the v4 reference. Sprint 3 Phase 3
+        will make config values flow into tab content.
     """
     wb = Workbook()
 
