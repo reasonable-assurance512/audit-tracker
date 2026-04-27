@@ -12,6 +12,8 @@ from datetime import date
 from openpyxl.formatting.rule import FormulaRule
 from openpyxl.styles import Font
 
+from .config import AuditConfig
+
 from .constants import (
     AS_FIELD,
     AS_KICK,
@@ -94,7 +96,7 @@ def _input_row(ws, row, label, value, number_format=None, note="", note_bold=Fal
         note_cell.border = make_border()
 
 
-def build_setup_tab(wb, closed_range, skeleton_range):
+def build_setup_tab(wb, config, closed_range, skeleton_range):
     """
     Build the Audit Setup tab in the given workbook.
 
@@ -144,7 +146,7 @@ def build_setup_tab(wb, closed_range, skeleton_range):
     label.border = make_border()
     label.alignment = make_align()
 
-    kickoff_cell = ws.cell(row=5, column=2, value=date(2026, 4, 1))
+    kickoff_cell = ws.cell(row=5, column=2, value=config.kickoff_date)
     kickoff_cell.font = make_font(bold=True, color=BLUE_IN, size=11)
     kickoff_cell.fill = make_fill(LIGHT_BLUE)
     kickoff_cell.number_format = "MM/DD/YYYY"
@@ -202,7 +204,7 @@ def build_setup_tab(wb, closed_range, skeleton_range):
         ws,
         7,
         "Standard Hours Lost per Holiday/Skeleton Day",
-        8,
+        config.hours_per_holiday,
         "0",
         "Deducted from resource tabs per closure. Default: 8.",
     )
@@ -216,7 +218,7 @@ def build_setup_tab(wb, closed_range, skeleton_range):
     label.border = make_border()
     label.alignment = make_align()
 
-    buffer_cell = ws.cell(row=8, column=2, value=1)
+    buffer_cell = ws.cell(row=8, column=2, value=config.on_target_buffer)
     buffer_cell.font = make_font(bold=True, color=BLUE_IN, size=11)
     buffer_cell.fill = make_fill(LIGHT_BLUE)
     buffer_cell.number_format = "0"
@@ -262,7 +264,7 @@ def build_setup_tab(wb, closed_range, skeleton_range):
         (
             AS_PLAN,
             "PLANNING",
-            4,
+            config.planning_weeks,
             PLAN_HDR,
             PLAN_BG,
             "=B5-WEEKDAY(B5,2)+1",
@@ -272,7 +274,7 @@ def build_setup_tab(wb, closed_range, skeleton_range):
         (
             AS_FIELD,
             "FIELDWORK",
-            16,
+            config.fieldwork_weeks,
             FIELD_HDR,
             FIELD_BG,
             f"=D{AS_PLAN}+3",
@@ -282,7 +284,7 @@ def build_setup_tab(wb, closed_range, skeleton_range):
         (
             AS_REP,
             "REPORTING",
-            4,
+            config.reporting_weeks,
             REP_HDR,
             REP_BG,
             f"=D{AS_FIELD}+3",

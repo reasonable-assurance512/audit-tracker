@@ -19,6 +19,8 @@ an extra protection-note row near the top.
 from openpyxl.formatting.rule import FormulaRule
 from openpyxl.styles import Font
 
+from .config import AuditConfig
+
 from .constants import (
     AM_CLR,
     AS_FIELD,
@@ -348,7 +350,7 @@ def _write_grand_total_row(ws):
         cell.border = make_border()
 
 
-def build_mbdd_tab(wb, closed_range, skeleton_range):
+def build_mbdd_tab(wb, config, closed_range, skeleton_range):
     """
     Build the Master Budget by Date tab.
 
@@ -478,13 +480,13 @@ def build_mbdd_tab(wb, closed_range, skeleton_range):
 
     # Pre-hide rows beyond defaults
     for i, row in enumerate(range(MBDD_PLAN_S, MBDD_PLAN_E + 1)):
-        if i >= DEFAULT_PLAN:
+        if i >= config.planning_weeks:
             ws.row_dimensions[row].hidden = True
     for i, row in enumerate(range(MBDD_FIELD_S, MBDD_FIELD_E + 1)):
-        if i >= DEFAULT_FIELD:
+        if i >= config.fieldwork_weeks:
             ws.row_dimensions[row].hidden = True
     for i, row in enumerate(range(MBDD_REP_S, MBDD_REP_E + 1)):
-        if i >= DEFAULT_REP:
+        if i >= config.reporting_weeks:
             ws.row_dimensions[row].hidden = True
 
     ws.freeze_panes = "A5"

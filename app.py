@@ -5,9 +5,9 @@ Accepts kickoff date and phase weeks, generates a complete 13-tab
 Excel workbook via the modular builder package, and offers it as
 a browser download.
 
-Per Sprint 3 conservative scope: user inputs are now wrapped in an
+Per Sprint 3 conservative scope: user inputs are wrapped in an
 AuditConfig dataclass and passed to the orchestrator. Tab builders
-do not yet consume config values; that is Phase 3 of Sprint 3 work.
+consume config values for kickoff date, phase weeks, on-target buffer, and hours per holiday.
 """
 
 from datetime import date
@@ -25,7 +25,7 @@ st.set_page_config(
 )
 
 st.title("Audit Resource Tracker")
-st.caption("Sprint 3 in progress — config dataclass wired, tab builders updating")
+st.caption("Sprint 3 complete — input-driven workbook generation")
 
 st.markdown(
     """
@@ -37,8 +37,8 @@ st.markdown(
 
 st.markdown(
     """
-    > **Scope note.** Output uses reference dates regardless of inputs.
-    > Input-driven generation is the next phase of Sprint 3.
+    > **Scope note.** Inputs now drive workbook output: kickoff date, phase weeks, on-target buffer, and hours per holiday all flow through to the generated file.
+    > Sprint 3 conservative scope is complete; live preview UI is a future enhancement.
     """
 )
 

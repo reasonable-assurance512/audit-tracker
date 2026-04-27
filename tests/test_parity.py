@@ -16,6 +16,7 @@ from openpyxl import Workbook, load_workbook
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+from builder.config import AuditConfig
 from builder.constants import RES_TABS
 from builder.holidays_tab import build_holidays_tab
 from builder.resource_tab import build_all_resource_tabs
@@ -29,16 +30,24 @@ def generate_full_workbook():
     """
     Generate a workbook with all tabs extracted so far.
     Currently: Holidays & Skeleton, Audit Setup, 9 Resource tabs.
+
+    Uses a default-valued AuditConfig so the output matches the
+    v4 reference golden file. Different config values would produce
+    different output and fail parity (which is correct — parity is
+    only meaningful for the default-configured case).
     """
     wb = Workbook()
+    config = AuditConfig()
     holidays_info = build_holidays_tab(wb)
     build_setup_tab(
         wb,
+        config=config,
         closed_range=holidays_info["closed_range"],
         skeleton_range=holidays_info["skeleton_range"],
     )
     build_all_resource_tabs(
         wb,
+        config=config,
         closed_range=holidays_info["closed_range"],
         skeleton_range=holidays_info["skeleton_range"],
     )
@@ -193,14 +202,9 @@ def test_resource_tabs_parity():
 # decision), these tabs are extracted into the modular package and
 # verified visually but not by automated cell-by-cell comparison.
 #
-# Reason: the reference/build_v4.py script does not currently produce
-# these tabs in its golden output. Extending parity coverage to MBDD
-# and Budget by Task requires either (a) extending the reference
-# script to produce them, then regenerating the golden file, or
-# (b) generating a separate golden file specifically for these tabs.
-#
 # Tracked as backlog item F-10 for a future sprint.
 # ─────────────────────────────────────────────────────────────────
+
 
 if __name__ == "__main__":
     test_holidays_tab_parity()

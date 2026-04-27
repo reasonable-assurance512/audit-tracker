@@ -15,6 +15,8 @@ from openpyxl.formatting.rule import FormulaRule
 from openpyxl.styles import Font
 from openpyxl.worksheet.datavalidation import DataValidation
 
+from .config import AuditConfig
+
 from .constants import (
     AS_FIELD,
     AS_HOL,
@@ -353,7 +355,7 @@ def _write_variance_row(ws):
     note.alignment = make_align("left")
 
 
-def build_resource_tab(wb, tab_name, display_name, tab_color, closed_range, skeleton_range):
+def build_resource_tab(wb, config, tab_name, display_name, tab_color, closed_range, skeleton_range):
     """
     Build one Resource tab in the given workbook.
 
@@ -459,19 +461,19 @@ def build_resource_tab(wb, tab_name, display_name, tab_color, closed_range, skel
 
     # Pre-hide rows beyond defaults
     for i, row in enumerate(range(PLAN_S, PLAN_E + 1)):
-        if i >= DEFAULT_PLAN:
+        if i >= config.planning_weeks:
             ws.row_dimensions[row].hidden = True
     for i, row in enumerate(range(FIELD_S, FIELD_E + 1)):
-        if i >= DEFAULT_FIELD:
+        if i >= config.fieldwork_weeks:
             ws.row_dimensions[row].hidden = True
     for i, row in enumerate(range(REP_S, REP_E + 1)):
-        if i >= DEFAULT_REP:
+        if i >= config.reporting_weeks:
             ws.row_dimensions[row].hidden = True
 
     return ws
 
 
-def build_all_resource_tabs(wb, closed_range, skeleton_range):
+def build_all_resource_tabs(wb, config, closed_range, skeleton_range):
     """
     Build all 9 resource tabs using the RESOURCES list from constants.
     Returns a dict mapping display names to worksheet objects.
@@ -479,7 +481,7 @@ def build_all_resource_tabs(wb, closed_range, skeleton_range):
     result = {}
     for tab_name, display_name, tab_color in RESOURCES:
         ws = build_resource_tab(
-            wb, tab_name, display_name, tab_color,
+            wb, config, tab_name, display_name, tab_color,
             closed_range, skeleton_range,
         )
         result[display_name] = ws

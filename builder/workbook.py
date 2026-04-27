@@ -5,11 +5,10 @@ Coordinates the modular tab builders to produce a complete workbook
 ready for download. Returns a BytesIO object suitable for
 Streamlit's st.download_button.
 
-Per Sprint 3 (conservative scope): inputs are accepted as an AuditConfig
-dataclass and forwarded to tab builders. The tab builders themselves
-do not yet consume config values; that is Phase 3 of Sprint 3 work.
-For now, the workbook output is identical regardless of config because
-the tab builders use their existing hardcoded defaults.
+Per Sprint 3 Phase 3: AuditConfig values flow through to tab builders
+that need them (setup_tab, resource_tab, mbdd_tab). The Holidays &
+Skeleton and Budget by Task builders do not currently consume config
+because their content is independent of audit-specific inputs.
 """
 
 from io import BytesIO
@@ -34,12 +33,6 @@ def build_workbook(config: AuditConfig) -> BytesIO:
 
     Returns:
         BytesIO containing the generated .xlsx file, positioned at start.
-
-    Note:
-        Per Sprint 3 conservative scope, config is currently accepted but
-        not yet threaded through to tab builders. The output workbook uses
-        hardcoded defaults that match the v4 reference. Sprint 3 Phase 3
-        will make config values flow into tab content.
     """
     wb = Workbook()
 
@@ -49,18 +42,21 @@ def build_workbook(config: AuditConfig) -> BytesIO:
 
     build_setup_tab(
         wb,
+        config=config,
         closed_range=closed_range,
         skeleton_range=skeleton_range,
     )
 
     build_all_resource_tabs(
         wb,
+        config=config,
         closed_range=closed_range,
         skeleton_range=skeleton_range,
     )
 
     build_mbdd_tab(
         wb,
+        config=config,
         closed_range=closed_range,
         skeleton_range=skeleton_range,
     )
