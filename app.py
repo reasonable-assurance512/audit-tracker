@@ -21,7 +21,7 @@ from builder.config import AuditConfig
 st.set_page_config(
     page_title="Audit Resource Tracker",
     page_icon="📋",
-    layout="centered",
+    layout="wide",
 )
 
 st.title("Audit Resource Tracker")
