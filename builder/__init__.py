@@ -8,5 +8,6 @@ imports for use by the parity test framework.
 """
 
 from .workbook import build_workbook
+from .holidays_data import CLOSURE_DAYS, SKELETON_DAYS
 
-__all__ = ["build_workbook"]
+__all__ = ["build_workbook", "CLOSURE_DAYS", "SKELETON_DAYS"]

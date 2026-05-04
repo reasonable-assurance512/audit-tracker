@@ -6,8 +6,6 @@ skeleton crew days across FY2026 and FY2027. Returns the row ranges
 used by downstream tabs for COUNTIFS formulas.
 """
 
-from datetime import date
-
 from .constants import (
     BROWN,
     DARK_BLUE,
@@ -19,43 +17,7 @@ from .constants import (
     make_fill,
     make_font,
 )
-
-
-# ── Holiday data ──────────────────────────────────────────
-CLOSED = [
-    ("Labor Day", date(2025, 9, 1), "FY2026"),
-    ("Veterans Day", date(2025, 11, 11), "FY2026"),
-    ("Thanksgiving Day", date(2025, 11, 27), "FY2026"),
-    ("Day after Thanksgiving", date(2025, 11, 28), "FY2026"),
-    ("Christmas Eve Day", date(2025, 12, 24), "FY2026"),
-    ("Christmas Day", date(2025, 12, 25), "FY2026"),
-    ("Day after Christmas", date(2025, 12, 26), "FY2026"),
-    ("New Year's Day", date(2026, 1, 1), "FY2026"),
-    ("Martin Luther King, Jr. Day", date(2026, 1, 19), "FY2026"),
-    ("Presidents' Day", date(2026, 2, 16), "FY2026"),
-    ("Memorial Day", date(2026, 5, 25), "FY2026"),
-    ("Labor Day", date(2026, 9, 7), "FY2027"),
-    ("Veterans Day", date(2026, 11, 11), "FY2027"),
-    ("Thanksgiving Day", date(2026, 11, 26), "FY2027"),
-    ("Day after Thanksgiving", date(2026, 11, 27), "FY2027"),
-    ("Christmas Eve Day", date(2026, 12, 24), "FY2027"),
-    ("Christmas Day", date(2026, 12, 25), "FY2027"),
-    ("New Year's Day", date(2027, 1, 1), "FY2027"),
-    ("Martin Luther King, Jr. Day", date(2027, 1, 18), "FY2027"),
-    ("Presidents' Day", date(2027, 2, 15), "FY2027"),
-    ("Memorial Day", date(2027, 5, 31), "FY2027"),
-]
-
-SKEL = [
-    ("Texas Independence Day", date(2026, 3, 2), "FY2026"),
-    ("San Jacinto Day", date(2026, 4, 21), "FY2026"),
-    ("Emancipation Day", date(2026, 6, 19), "FY2026"),
-    ("LBJ Day", date(2026, 8, 27), "FY2026"),
-    ("Confederate Heroes Day", date(2027, 1, 19), "FY2027"),
-    ("Texas Independence Day", date(2027, 3, 2), "FY2027"),
-    ("San Jacinto Day", date(2027, 4, 21), "FY2027"),
-    ("LBJ Day", date(2027, 8, 27), "FY2027"),
-]
+from .holidays_data import CLOSURE_DAYS, SKELETON_DAYS
 
 
 def _write_section(ws, start_row, title, header_bg, data):
@@ -122,10 +84,10 @@ def build_holidays_tab(wb):
     ws.row_dimensions[1].height = 22
 
     closed_start, closed_end = _write_section(
-        ws, 3, "ALL AGENCIES CLOSED", DARK_BLUE, CLOSED
+        ws, 3, "ALL AGENCIES CLOSED", DARK_BLUE, CLOSURE_DAYS
     )
     skeleton_start, skeleton_end = _write_section(
-        ws, closed_end + 2, "SKELETON CREW DAYS", BROWN, SKEL
+        ws, closed_end + 2, "SKELETON CREW DAYS", BROWN, SKELETON_DAYS
     )
 
     # Footer note
